@@ -1,140 +1,151 @@
-# agendamento-consultorio-api
+# agendamento-consultorio-web
 
-API REST em Spring Boot com autenticação JWT e controle de acesso por roles (ADMIN/USER).
+Frontend em React + Vite + Tailwind consumindo a API com login JWT e sidebar por roles.
 
 ## Key Features & Benefits
 
-*   **Authentication and Authorization:** Secure API with JWT authentication and role-based access control (ADMIN/USER).
-*   **RESTful API:** Well-defined REST endpoints for managing appointments and related data.
-*   **Spring Boot:** Built on the Spring Boot framework for rapid development and easy deployment.
-*   **Docker Support:** Containerized application for easy deployment and scalability using Docker.
-*   **CEP Integration:** Possible integration with CEP services through the `CepController`.
-*   **Admin User Seeder:** Seeds a default admin user using `AdminSeeder` for initial setup.
+*   **Authentication and Authorization:** Secure frontend with JWT authentication, interacting with a backend API.
+*   **Role-Based Access Control:** Sidebar and content dynamically adjust based on user roles (e.g., ADMIN, USER).
+*   **Modern Technologies:** Built with React, Vite, and Tailwind CSS for a fast and responsive user experience.
+*   **Modular Architecture:** Well-structured codebase for maintainability and scalability.
 
 ## Prerequisites & Dependencies
 
-*   **Java Development Kit (JDK):** Version 21 or higher
-*   **Maven:** Version 3.6 or higher
-*   **Docker:** For containerized deployment (optional)
-*   **IDE:** IntelliJ IDEA, Eclipse, or any preferred IDE
-*   **Database:** Assumed to be configured and accessible (configuration details in application.properties or similar)
+Before you begin, ensure you have the following installed:
+
+*   **Node.js:** (Version >= 18.x) - [Download Node.js](https://nodejs.org/)
+*   **npm:** (Usually comes with Node.js) or **yarn:** (Install via `npm install -g yarn`)
+*   **A code editor:** (e.g., VS Code, Sublime Text)
 
 ## Installation & Setup Instructions
+
+Follow these steps to get the project running locally:
 
 1.  **Clone the repository:**
 
     ```bash
-    git clone https://github.com/Edu-Victor/agendamento-consultorio-api.git
-    cd agendamento-consultorio-api
+    git clone https://github.com/Edu-Victor/agendamento-consultorio-web.git
+    cd agendamento-consultorio-web
     ```
 
-2.  **Build the project using Maven:**
+2.  **Install dependencies:**
+
+    Using npm:
 
     ```bash
-    ./mvnw clean install
+    npm install
     ```
 
-3.  **Run the application:**
+    Or using yarn:
 
-    *   **Option 1: Using Maven:**
+    ```bash
+    yarn install
+    ```
 
-        ```bash
-        ./mvnw spring-boot:run
-        ```
+3.  **Configure Environment Variables:**
 
-    *   **Option 2: Using the JAR file:**
+    Create a `.env` file in the root of the project (if not already present) and configure the following variables according to your setup:
 
-        ```bash
-        java -jar target/*.jar
-        ```
+    ```
+    VITE_API_BASE_URL=http://localhost:8080/api
+    ```
 
-4.  **Docker Setup (Optional):**
+    Replace `http://localhost:8080/api` with the actual URL of your backend API.
 
-    1.  Build the Docker image:
+4.  **Start the development server:**
 
-        ```bash
-        docker build -t agendamento-consultorio-api .
-        ```
+    Using npm:
 
-    2.  Run the Docker container:
+    ```bash
+    npm run dev
+    ```
 
-        ```bash
-        docker run -p 8080:8080 agendamento-consultorio-api
-        ```
+    Or using yarn:
 
-## Usage Examples & API Documentation (if applicable)
+    ```bash
+    yarn dev
+    ```
 
-**API Endpoints** (Example, assuming server runs on `localhost:8080`):
+    This will start the development server, and the application will be accessible in your browser (usually at `http://localhost:5173`).
 
-*   **Authentication:**
-    *   `POST /auth/login`: Authenticate user and obtain JWT token. Requires `username` and `password` in request body.
-*   **User Management (ADMIN only):**
-    *   `POST /pacientes`: Create a new patient (requires ADMIN role).
-    *   `GET /pacientes/{id}`: Get patient details by ID (requires ADMIN/USER role, user can only access their own details).
-*   **CEP Integration (if implemented):**
-    *   `GET /cep/{cep}`: Retrieve address information based on CEP.
+## Usage Examples & API Documentation
 
-**Example Request (Login):**
+This frontend interacts with a backend API.  You'll need to have the backend API running for full functionality.
 
-```json
-POST /auth/login
-Content-Type: application/json
+The following examples illustrate common API interactions:
 
-{
-  "username": "admin",
-  "password": "password"
-}
-```
+*   **Login:**
 
-**Example Response (Login):**
+    The `AuthContext.jsx` handles user authentication using JWT. The `jwt.js` file likely contains functions for handling JWT tokens (storage, retrieval).
 
-```json
-{
-  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
-}
-```
+*   **Role-Based Navigation:**
 
-**API Usage:** Include the `Authorization` header with the JWT token for protected endpoints:
+    The `RequireAuth.jsx` component is used to protect routes based on user roles.  It verifies if the user has the necessary role to access a specific route.
 
-```
-Authorization: Bearer <JWT Token>
-```
+*   **API Calls:**
 
-**Further API documentation (including request/response schemas) can be generated using tools like Swagger/OpenAPI.**
+    The `api/http.js` file likely contains an Axios instance pre-configured to interact with the API, handling base URLs and potentially including JWT tokens in headers.  For example:
+
+    ```javascript
+    // api/http.js
+    import axios from 'axios';
+
+    const http = axios.create({
+      baseURL: import.meta.env.VITE_API_BASE_URL,
+    });
+
+    // Add authorization header if token exists
+    http.interceptors.request.use(config => {
+      const token = localStorage.getItem('token');
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+      return config;
+    }, error => {
+      return Promise.reject(error);
+    });
+
+    export default http;
+    ```
+
+    ```javascript
+    // Example usage in a component:
+    import http from './api/http';
+
+    const fetchData = async () => {
+      try {
+        const response = await http.get('/data');
+        console.log(response.data);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    };
+    ```
 
 ## Configuration Options
 
-The application can be configured via:
-
-*   **application.properties/application.yml:** Located in `src/main/resources`, this file contains database connection details, JWT secret key, port configuration, etc.  Modify these settings as needed for your environment.
-*   **Environment Variables:** Application properties can be overridden using environment variables (e.g., `SPRING_DATASOURCE_URL`, `JWT_SECRET`).
-
-**Example `application.properties`:**
-
-```properties
-spring.datasource.url=jdbc:postgresql://localhost:5432/consultorio
-spring.datasource.username=your_username
-spring.datasource.password=your_password
-spring.jpa.hibernate.ddl-auto=update
-
-jwt.secret=your_secret_key
-server.port=8080
-```
+*   **VITE_API_BASE_URL:**  Defines the base URL for the backend API. This is set in the `.env` file.
 
 ## Contributing Guidelines
 
-1.  Fork the repository.
-2.  Create a new branch for your feature or bug fix.
-3.  Make your changes and commit them with descriptive commit messages.
-4.  Test your changes thoroughly.
-5.  Submit a pull request to the main branch.
+We welcome contributions! Here's how you can contribute to this project:
+
+1.  **Fork the repository.**
+2.  **Create a new branch for your feature or bug fix:**  `git checkout -b feature/your-feature-name`
+3.  **Make your changes and commit them:** `git commit -m "Add: Your descriptive commit message"`
+4.  **Push to the branch:** `git push origin feature/your-feature-name`
+5.  **Submit a pull request.**
+
+Please ensure your code adheres to the project's coding standards.
 
 ## License Information
 
-No license specified. All rights reserved.
+This project is open-source, but the license is currently unspecified. Please contact the repository owner for licensing details.
 
-## Acknowledgments (if relevant)
+## Acknowledgments
 
-*   Spring Boot: For providing a robust and efficient framework.
-*   Maven: For dependency management and build automation.
-*   JWT: For secure authentication and authorization.
+*   This project uses the following open-source libraries:
+    *   React
+    *   Vite
+    *   Tailwind CSS
+    *   Axios
